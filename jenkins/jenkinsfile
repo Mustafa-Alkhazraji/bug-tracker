@@ -51,7 +51,7 @@ pipeline {
                     // تثبيت التبعيات وتشغيل الاختبارات
                     sh '''
                     npm install
-                    npm test -- --reporter=junit --outputFile=test-results.xml
+                    npm test 
                     '''
                 }
             }
