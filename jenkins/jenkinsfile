@@ -2,34 +2,43 @@ pipeline {
     agent any
 
     stages {
+        // ---------------------------------------------------------------- //
+        // Stage 1: Backend Unit Tests (Golang)
+        // ---------------------------------------------------------------- //
         stage('Unit Tests - backend') {
             agent {
                 docker {
+                    // استخدام الصورة القديمة التي يبدو أنها تعمل على هذا الـ Agent
                     image 'snakee/golang-junit:1.21'
                     reuseNode true
                 }
             }
             steps {
-                // ****** يجب تطبيق كلا متغيري البيئة الآن ******
+                // إعداد متغيرات البيئة لـ Go Cache لحل مشاكل الأذونات (ضروري لمعظم صور Docker)
                 withEnv([
-                    "GOCACHE=${WORKSPACE}/.go_cache",   // لحل مشكلة Build Cache
-                    "GOMODCACHE=${WORKSPACE}/.go_mod_cache" // لحل مشكلة Modules/Dependencies
+                    "GOCACHE=${WORKSPACE}/.go_cache",
+                    "GOMODCACHE=${WORKSPACE}/.go_mod_cache"
                 ]) {
                     
                     dir('bugtracker-backend'){
-                        // تشغيل الأمر go test، الذي سيقوم بتنزيل الوحدات وتخزينها في المسارات الجديدة
+                        // تشغيل go test وتوجيه الإخراج إلى go-junit-report لإنشاء تقرير XML
+                        // يتم استخدام 2>&1 لدمج stdout و stderr قبل تمريره إلى الأداة
                         sh "go test ./... -v 2>&1 | go-junit-report > test-results.xml"
                     }
                 }
+            }
+            // ************ تم نقل كتلة POST هنا (بجانب steps) ************
             post {
                 always {
+                    // نشر تقرير JUnit بعد محاولة الاختبارات دائمًا
                     junit 'bugtracker-backend/test-results.xml'
                 }
             }
-
-                // **********************************************
-            }
         }
+
+        // ---------------------------------------------------------------- //
+        // Stage 2: Frontend Unit Tests (Node/npm)
+        // ---------------------------------------------------------------- //
         stage('Unit Tests - frontend') {
             agent {
                 docker {
@@ -39,17 +48,20 @@ pipeline {
             }
             steps {
                 dir('bugtracker-frontend'){
+                    // تثبيت التبعيات وتشغيل الاختبارات
                     sh '''
                     npm install
-                    npm test
+                    npm test -- --reporter=junit --outputFile=test-results.xml
                     '''
                 }
             }
+            // ************ تم نقل كتلة POST هنا (بجانب steps) ************
             post {
                 always {
+                    // نشر تقرير JUnit للـ Frontend بعد محاولة الاختبارات دائمًا
                     junit 'bugtracker-frontend/test-results.xml'
                 }
             }
         }
     }
-}
+} // <--- تم إضافة هذا القوس لإغلاق كتلة pipeline
