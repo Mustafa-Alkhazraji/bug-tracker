@@ -10,9 +10,16 @@ pipeline {
                 }
             }
             steps {
-                dir('bugtracker-backend'){
-                    sh "go test ./... -v" 
+                // -----------------------------------------------------
+                // تم إضافة كتلة withEnv لحل مشكلة الأذونات GOCACHE
+                withEnv(["GOCACHE=${WORKSPACE}/.go_cache"]) {
+                    
+                    dir('bugtracker-backend'){
+                        // الآن سيتم تنفيذ الأمر go test باستخدام مسار الـ cache الجديد
+                        sh "go test ./... -v" 
+                    }
                 }
+                // -----------------------------------------------------
             }
         }
     }
