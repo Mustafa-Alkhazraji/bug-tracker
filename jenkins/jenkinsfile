@@ -26,8 +26,10 @@ pipeline {
                     junit 'bugtracker-backend/test-results.xml'
                 }
             }
+
+                // **********************************************
+            }
         }
-        // **********************************************
         stage('Unit Tests - frontend') {
             agent {
                 docker {
