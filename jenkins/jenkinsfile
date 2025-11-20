@@ -5,23 +5,14 @@ pipeline {
         stage('Unit Tests - backend') {
             agent {
                 docker {
-                    image 'snakee/golang-junit:1.21'
+                    image 'snakee/golang-junit:1.22'
                     reuseNode true
                 }
             }
             steps {
-                // ****** يجب تطبيق كلا متغيري البيئة الآن ******
-                withEnv([
-                    "GOCACHE=${WORKSPACE}/.go_cache",   // لحل مشكلة Build Cache
-                    "GOMODCACHE=${WORKSPACE}/.go_mod_cache" // لحل مشكلة Modules/Dependencies
-                ]) {
-                    
-                    dir('bugtracker-backend'){
-                        // تشغيل الأمر go test، الذي سيقوم بتنزيل الوحدات وتخزينها في المسارات الجديدة
-                        sh "go test ./... -v" 
-                    }
+                dir('bugtracker-backend'){
+                    sh "go test ./... -v" 
                 }
-                // **********************************************
             }
         }
     }
