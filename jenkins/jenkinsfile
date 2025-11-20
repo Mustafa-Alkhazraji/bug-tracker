@@ -10,16 +10,18 @@ pipeline {
                 }
             }
             steps {
-                // -----------------------------------------------------
-                // تم إضافة كتلة withEnv لحل مشكلة الأذونات GOCACHE
-                withEnv(["GOCACHE=${WORKSPACE}/.go_cache"]) {
+                // ****** يجب تطبيق كلا متغيري البيئة الآن ******
+                withEnv([
+                    "GOCACHE=${WORKSPACE}/.go_cache",   // لحل مشكلة Build Cache
+                    "GOMODCACHE=${WORKSPACE}/.go_mod_cache" // لحل مشكلة Modules/Dependencies
+                ]) {
                     
                     dir('bugtracker-backend'){
-                        // الآن سيتم تنفيذ الأمر go test باستخدام مسار الـ cache الجديد
+                        // تشغيل الأمر go test، الذي سيقوم بتنزيل الوحدات وتخزينها في المسارات الجديدة
                         sh "go test ./... -v" 
                     }
                 }
-                // -----------------------------------------------------
+                // **********************************************
             }
         }
     }
