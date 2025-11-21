@@ -61,7 +61,7 @@ pipeline {
                     npm install
                     npm test 
                     mkdir -p reports
-                    mv coverage /reports
+                    mv coverage reports/
                     '''
                 }
             }
