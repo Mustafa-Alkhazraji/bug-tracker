@@ -76,7 +76,7 @@ pipeline {
     }
     post {
         always {
-            cleanWs()
+            cleanWs(deleteDirs: true, notFailBuild: true, patterns: ['!/.go_cache', '!/.go_mod_cache'])
         }
     }
 } 
