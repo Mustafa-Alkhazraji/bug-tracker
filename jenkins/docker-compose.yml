@@ -18,6 +18,7 @@ services:
 
   my-jenkins:
     image: my-jenkins
+    user: root
     container_name: my-jenkins
     restart: on-failure
     environment:
