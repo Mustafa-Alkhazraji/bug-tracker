@@ -1,41 +1,37 @@
 pipeline {
     agent any
 
-    environment {
-        GOCACHE = "${WORKSPACE}/.go_cache"
-        GOMODCACHE = "${WORKSPACE}/.go_mod_cache"
-        NPM_CACHE = "${WORKSPACE}/.npm_cache"
-    }
-
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Execute Unit Tests') {
+    stages  {
+        stage('execute Unit test') {
             parallel {
-                stage('Unit Tests - Backend') {
+                stage('Unit Tests - backend') {
                     agent {
                         docker {
                             image 'snakee/golang-junit:1.21'
-                            reuseNode false
+                            reuseNode true
                         }
                     }
                     steps {
-                        withEnv(["GOCACHE=${GOCACHE}", "GOMODCACHE=${GOMODCACHE}"]) {
-                            dir('bugtracker-backend') {
+                        withEnv([
+                            "GOCACHE=${WORKSPACE}/.go_cache",
+                            "GOMODCACHE=${WORKSPACE}/.go_mod_cache"
+                        ]) {
+                            
+                            dir('bugtracker-backend'){
                                 sh '''
                                     go test ./... -v 2>&1 | go-junit-report > test-results.xml
+
+                                    # create coverage report
                                     go test -coverprofile=coverage.out -covermode=atomic ./...
                                     go tool cover -html=coverage.out -o coverage.html
+
                                     mkdir -p reports
                                     mv coverage.html reports/
                                 '''
                             }
                         }
                     }
+                    
                     post {
                         always {
                             junit 'bugtracker-backend/test-results.xml'
@@ -47,21 +43,20 @@ pipeline {
                         }
                     }
                 }
-
-                stage('Unit Tests - Frontend') {
+                stage('Unit Tests - frontend') {
                     agent {
                         docker {
                             image 'node:20-alpine'
-                            reuseNode false
+                            reuseNode true
                         }
                     }
                     steps {
-                        dir('bugtracker-frontend') {
+                        dir('bugtracker-frontend'){
                             sh '''
-                            npm ci --cache $NPM_CACHE
-                            npm test
+                            npm install
+                            npm test 
                             mkdir -p reports
-                            mv coverage reports/ || true
+                            mv coverage reports/
                             '''
                         }
                     }
@@ -73,7 +68,6 @@ pipeline {
                                 reportFiles: 'index.html',
                                 reportName: 'Frontend Coverage Report'
                             ]
-                            sh 'rm -rf bugtracker-frontend/node_modules || true'
                         }
                     }
                 }
@@ -83,13 +77,13 @@ pipeline {
         stage('Launch Application') {
             agent {
                 docker {
-                    image 'docker:24.0.5-dind'
-                    args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
-                    reuseNode false
+                    image 'docker:latest'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock -u 0'
+                    reuseNode true
                 }
             }
             steps {
-                sh 'docker compose up --build -d'
+                sh "docker compose up --build -d"
             }
         }
 
@@ -97,7 +91,7 @@ pipeline {
             agent {
                 docker {
                     image 'mcr.microsoft.com/playwright:v1.50.0-noble'
-                    reuseNode false
+                    reuseNode true
                     args '--user 0 --network=host'
                 }
             }
@@ -105,41 +99,27 @@ pipeline {
                 dir('tests-api') {
                     sh '''
                     npx wait-port http://localhost:8080/api/health -t 30000
-                    npm ci --cache $NPM_CACHE
+                    npm ci
                     npx playwright test
                     '''
                 }
             }
             post {
                 always {
-                    sh 'rm -rf tests-api/node_modules || true'
-                    junit 'tests-api/test-results/results.xml'
-                    publishHTML target: [
-                        reportDir: 'tests-api/playwright-report',
-                        reportFiles: 'index.html',
-                        reportName: 'Playwright API Test Report'
-                    ]
+                    dir('tests-api/test-results/results.xml') {
+                        publishHTML target: [
+                            reportDir: 'test-api/playwright-report',
+                            reportFiles: 'index.html',
+                            reportName: 'playwright API Test Report'
+                        ]
+                    }
                 }
             }
         }
     }
-
     post {
         always {
-            // إيقاف Docker Compose وتنظيف الـ containers
-            sh 'docker compose down || true'
-            sh 'docker system prune -af || true'
-
-            // تنظيف workspace مع الاحتفاظ بـ cache
-            cleanWs(
-                deleteDirs: true,
-                notFailBuild: true,
-                patterns: [
-                    [pattern: '.go_cache', type: 'EXCLUDE'],
-                    [pattern: '.go_mod_cache', type: 'EXCLUDE'],
-                    [pattern: '.npm_cache', type: 'EXCLUDE']
-                ]
-            )
+            cleanWs(deleteDirs: true, notFailBuild: true, patterns: [[pattern: '.go_cache', type: 'EXCLUDE'], [pattern: '.go_mod_cache', type: 'EXCLUDE']])
         }
     }
-}
+} 
