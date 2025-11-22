@@ -1,13 +1,13 @@
 services:
   jenkins-docker:
     image: docker:dind
-    privileged: true
     container_name: jenkins-docker
+    privileged: true
     environment:
       - DOCKER_TLS_CERTDIR=/certs
     volumes:
       - jenkins-docker-certs:/certs/client
-      - jenkins-docker-data:/var/lib/docker
+      - jenkins-data:/var/jenkins_home
     ports:
       - "2376:2376"
     networks:
@@ -19,7 +19,7 @@ services:
   my-jenkins:
     image: my-jenkins
     container_name: my-jenkins
-    restart: unless-stopped
+    restart: on-failure
     environment:
       - DOCKER_HOST=tcp://docker:2376
       - DOCKER_CERT_PATH=/certs/client
@@ -41,4 +41,3 @@ networks:
 volumes:
   jenkins-docker-certs:
   jenkins-data:
-  jenkins-docker-data:
