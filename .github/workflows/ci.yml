@@ -34,7 +34,7 @@ jobs:
         with:
           name: Backend units tests report
           path: bugtracker-backend/test-results.xml
-          reporter: junit
+          reporter: jest-junit
 
 
   unit-tests-frontend:
@@ -62,4 +62,4 @@ jobs:
         with:
           name: Frontend Unit Tests report
           path: bugtracker-frontend/test-results.xml
-          reporter: junit
+          reporter: jest-junit
