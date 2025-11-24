@@ -26,7 +26,8 @@ jobs:
         working-directory: ./bugtracker-backend
 
         run: |
-          go test ./... -v 2>&1 | go-junit-report > test-results.xml
+          go test ./... -coverprofile=coverage.out -covermode=atomic -v \
+          2>&1 | go-junit-report > test-results.xml
 
       - name: publish backend test results
         uses: dorny/test-reporter@v2
@@ -35,7 +36,19 @@ jobs:
           name: Backend units tests report
           path: bugtracker-backend/test-results.xml
           reporter: jest-junit
-
+      
+      - name: Generate HTML coverage report
+        working-directory: ./bugtracker-backend
+        run: |
+          go tool cover -html=coverage.out -o coverage.html
+        
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Backend Coverage Report
+          path: |
+          bagtracker-backend/coverage.out
+          bagtracker-backend/coverage.html
 
   unit-tests-frontend:
     runs-on: ubuntu-latest
