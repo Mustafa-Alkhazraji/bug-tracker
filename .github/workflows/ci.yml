@@ -47,8 +47,8 @@ jobs:
         with:
           name: Backend Coverage Report
           path: |
-          bagtracker-backend/coverage.out
-          bagtracker-backend/coverage.html
+            bagtracker-backend/coverage.out
+            bagtracker-backend/coverage.html
 
   unit-tests-frontend:
     runs-on: ubuntu-latest
