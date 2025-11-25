@@ -83,7 +83,7 @@ jobs:
           cat full_output.txt >> ${GITHUB_STEP_SUMMARY}
           echo '```' >> ${GITHUB_STEP_SUMMARY}
 
-          echo "report<<EOF" >> $GITHUB_OUTput
+          echo "report<<EOF" >> $GITHUB_OUTPUT
           cat full_output.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
       
@@ -107,19 +107,19 @@ jobs:
       - name: Create backend coverage comment
         uses: peter-evans/create-or-update-comment@v4
         with: 
-          issue-number: ${{github.event.pull_request.number}}
+          issue-number: ${{ github.event.pull_request.number }}
           body: |
             ## Backend tests coverage report:
             ```
-            ${{needs.unit-tests-backend.outputs.coverage}}
-            ''''
+            ${{ needs.unit-tests-backend.outputs.coverage }}
+            ```
 
       - name: Create frontend coverage comment
         uses: peter-evans/create-or-update-comment@v4
         with: 
-          issue-number: ${{github.event.pull_request.number}}
+          issue-number: ${{ github.event.pull_request.number }}
           body: |
             ## Frontend tests results:
             ```
-            ${{needs.unit-tests-frontend.outputs.coverage}}
-            ''''
+            ${{ needs.unit-tests-frontend.outputs.coverage }}
+            ```
