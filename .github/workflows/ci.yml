@@ -167,7 +167,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: E2E Test Results
+          name: E2E playwright Test Results
           path: ./tests-e2e/playwright-report/
           retention-days: 30    
 
