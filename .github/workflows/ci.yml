@@ -120,4 +120,6 @@ jobs:
           issue-number: ${{github.event.pull_request.number}}
           body: |
             ## Frontend tests results:
-          ${{needs.unit-tests-frontend.outputs.}}
+            ```
+            ${{needs.unit-tests-frontend.outputs.}}
+            ''''
