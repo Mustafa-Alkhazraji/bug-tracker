@@ -151,7 +151,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: API Test Results
-          path: ./test-api/test-results/
+          path: ./tests-api/test-results/
           retention-days: 30
         
       - name: upload API test playwright report
@@ -159,6 +159,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: API playwright report
-          path: ./test-api/playwright-report/
+          path: ./tests-api/playwright-report/
           retention-days: 30
           
