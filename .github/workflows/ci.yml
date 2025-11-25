@@ -124,7 +124,7 @@ jobs:
             ${{ needs.unit-tests-frontend.outputs.coverage }}
             ```
 
-  api-tests:
+  api-e2e-tests:
     needs: [unit-tests-backend, unit-tests-frontend]
     runs-on: ubuntu-latest
 
@@ -139,19 +139,44 @@ jobs:
     
       - name: Run API tests
         working-directory: ./tests-api
+        env:
+          CI: "1"
         run: |
           npm ci
+          npx playwright test
+
+      - name: Run E2E tests
+        working-directory: ./tests-e2e
+        run: |
+          npm ci
+          npx playwright install
           npx playwright test
 
       - name: Shutdown Application
         run: docker compose down
 
-      - name: upload API test results
+      - name: upload E2E test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: E2E Test Results
+          path: ./tests-e2e/test-results/
+          retention-days: 30
+
+      - name: upload E2E test playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: API playwright report
+          path: ./tests-e2e/playwright-report/
+          retention-days: 30
+
+      - name: upload E2E test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: API Test Results
-          path: ./tests-api/test-results/
+          path: ./tests-e2e/test-results/
           retention-days: 30
         
       - name: upload API test playwright report
@@ -168,5 +193,13 @@ jobs:
         uses: dorny/test-reporter@v2
         with:
           name: API Tests Report
-          path: tests-api/test-results/*.xml
+          path: ./tests-api/test-results/*.xml
+          reporter: jest-junit 
+
+      - name: Publish E2E test results
+        if: always()
+        uses: dorny/test-reporter@v2
+        with:
+          name: API Tests Report
+          path: ./tests-e2e/test-results/results.xml
           reporter: jest-junit 
