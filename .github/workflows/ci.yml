@@ -162,21 +162,22 @@ jobs:
           name: E2E Test Results
           path: ./tests-e2e/test-results/
           retention-days: 30
-
-      - name: upload E2E test playwright report
+      
+      - name: upload E2E playwright results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: API playwright report
+          name: E2E Test Results
           path: ./tests-e2e/playwright-report/
-          retention-days: 30
+          retention-days: 30    
 
-      - name: upload E2E test results
+
+      - name: upload API test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: API Test Results
-          path: ./tests-e2e/test-results/
+          path: ./tests-api/test-results/
           retention-days: 30
         
       - name: upload API test playwright report
@@ -193,13 +194,13 @@ jobs:
         uses: dorny/test-reporter@v2
         with:
           name: API Tests Report
-          path: ./tests-api/test-results/*.xml
+          path: tests-api/test-results/*.xml
           reporter: jest-junit 
 
-      - name: Publish E2E test results
+      - name: Publish E2E playwright results
         if: always()
         uses: dorny/test-reporter@v2
         with:
           name: API Tests Report
-          path: ./tests-e2e/test-results/results.xml
+          path: tests-e2e/test-results/results.xml
           reporter: jest-junit 
