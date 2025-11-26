@@ -198,7 +198,7 @@ jobs:
           retention-days: 30
 
       - name: upload performance test results
-        if always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: performance-raw-results
@@ -206,7 +206,7 @@ jobs:
           retention-days: 30
 
       - name: upload performance test report
-        if always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: performance-html-report
