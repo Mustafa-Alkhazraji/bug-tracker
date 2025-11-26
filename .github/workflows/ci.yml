@@ -1,3 +1,4 @@
+# CI workflow for Bug Tracker application
 name: CI
 
 on:
