@@ -196,6 +196,22 @@ jobs:
           name: API playwright report
           path: ./tests-api/playwright-report/
           retention-days: 30
+
+      - name: upload performance test results
+        if always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-raw-results
+          path: ./tests-perf/summary.json
+          retention-days: 30
+
+      - name: upload performance test report
+        if always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-html-report
+          path: ./tests-perf/perf-results.html
+          retention-days: 30
           
 
       - name: Publish API test results
